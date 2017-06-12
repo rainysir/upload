@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title></title></head>
+<body>
+	<div id="uploadWrap" class="backBox" style="display: none;">
+	    <div class="tab-tip-Box">
+	        <div class="tab-mousedown" id="modal1">
+	            <span class="col-sm-12 titleFont">上传菜单</span>
+	        </div>
+	        <form id="tab-form" method="POST">
+	            <div class="form-horizontal">
+	                <div class="form-group" style="height:200px;">
+	                    <input id="uploadExcel" type="file" name="file" class="form-control" placeholder="请选择文件"
+	                           style="border:0;">
+	                    <span class="uploadTip"
+	                          style="color:red;display: block;width:80%;margin:0 auto;padding-top:30px;"></span>
+	                </div>
+	                <div class="form-group">
+	                    <label class="col-sm-3"></label>
+	                    <div class="col-sm-9 control-label">
+	                        <button type="button" class="btn btn-primary tab-submit">上传</button>
+	                        <button type="button" class="btn btn-default tab-cancel">取消</button>
+	                    </div>
+	                </div>
+	            </div>
+	        </form>
+	    </div>
+	</div>
+</body>
+<script>
+	//上传弹层
+    $(".uploadBtn").off().on("click", function () {
+        $("#tab-form")[0].reset();
+        $(".uploadTip").html("");
+        $("#uploadWrap").show();
+    });
+    //上传取消
+    $("#uploadWrap .tab-cancel").off().on("click", function () {
+        $(".uploadTip").html("");
+        $("#uploadWrap").hide();
+    });
+    //上传提交
+    $("#uploadWrap .tab-submit").off().on("click", function () {
+        var $file = $("#uploadExcel"),
+            $form = $("#tab-form"),
+            filePath = $file.val(),
+            fileSuffix = filePath.substring(filePath.lastIndexOf(".") + 1),
+            uploadUrl =  '/upm/user/import';
+
+        $.loading();
+
+        $form.attr("action", uploadUrl);
+
+        $form.ajaxForm({
+            dataType: 'json',
+            success: function (res) {
+                $.unloading();
+                if (res.success) {
+                    $("#uploadWrap").hide();
+                    $.popTips("success", "数据导入成功");
+                    own.loadTreeTable().loadResourceTreeTable($("#systemList").val());
+                } else {
+                    $(".uploadTip").html(res.msg);
+                }
+            },
+            error: function () {
+                $.unloading();
+                $(".uploadTip").html("系统异常, 请联系管理员!");
+            }
+        });
+
+        if ($file.val() == "") {
+            $.unloading();
+            $.popTips("danger", "请选择文件！");
+        } else if (fileSuffix.toLowerCase() == "xlsx" || fileSuffix.toLowerCase() == "xls") {
+            $form.submit();
+        } else {
+            $.unloading();
+            $.popTips("danger", "上传格式不正确！");
+        }
+    });
+</script>
+</html>
